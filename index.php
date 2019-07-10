@@ -134,23 +134,23 @@ function doTestDifficile() {
 
 //doTestEasy();
 //doTestMoyen();
-doTestDifficile();
+//doTestDifficile();
 
-//if ( isset($_POST) && ! empty($_POST) ) {
-//
-//    $sudokuSolver = new SudokuSolver();
-//
-//    foreach ( $_POST as $cell => $value ) {
-//        if ( "" !== $value ) {
-//            $row = substr($cell, 1, 1);
-//            $column = substr($cell, 3, 1);
-//            $sudokuSolver->setValue($column*10+$row, (int)$value);
-//        }
-//    }
-//
-//    $sudokuSolver->showSolvedSoduku(true);
-//
-//} else {
-//    SudokuSolver::showGetValuesForm();
-//}
+if ( isset($_POST) && ! empty($_POST) ) {
+
+    $sudokuSolver = new SudokuSolver();
+
+    foreach ( $_POST as $cell => $value ) {
+        if ( "" !== $value ) {
+            $row = substr($cell, 1, 1);
+            $column = substr($cell, 3, 1);
+            $sudokuSolver->setValue($column*10+$row, (int)$value);
+        }
+    }
+
+    $sudokuSolver->showSolvedSoduku(true);
+
+} else {
+    SudokuSolver::showGetValuesForm();
+}
 

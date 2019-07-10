@@ -50,6 +50,9 @@ class SudokuSolver
         foreach ( $this->possibilities as $cell => $possibilitiesArray ) {
             if ($this->getCellColumn($cell) === $column && null === $this->getValue($cell) ) {
                 unset($this->possibilities[$cell][$value]);
+                if ( 1 === count($this->possibilities[$cell]) ) {
+                    $this->setValue($cell, array_keys($this->possibilities[$cell])[0]);
+                }
             }
         }
     }
@@ -62,6 +65,9 @@ class SudokuSolver
         foreach ( $this->possibilities as $cell => $possibilitiesArray ) {
             if ( $this->getCellRow($cell) === $row && null === $this->getValue($cell) ) {
                 unset($this->possibilities[$cell][$value]);
+                if ( 1 === count($this->possibilities[$cell]) ) {
+                    $this->setValue($cell, array_keys($this->possibilities[$cell])[0]);
+                }
             }
         }
     }
@@ -74,6 +80,9 @@ class SudokuSolver
         foreach ( $this->possibilities as $cell => $possibilitiesArray ) {
             if ( $this->getCellCadran($cell) === $cadran && null === $this->getValue($cell) ) {
                 unset($this->possibilities[$cell][$value]);
+                if ( 1 === count($this->possibilities[$cell]) ) {
+                    $this->setValue($cell, array_keys($this->possibilities[$cell])[0]);
+                }
             }
         }
     }
@@ -157,14 +166,17 @@ class SudokuSolver
      *
      * @return array
      */
-    private function getPossibilityOccuranceInRow($row, $possibilityToCheck): array {
-        /* TODO possible to do it in less loops by checking multiple rows in the foreach */
+    private function getPossibilityOccuranceInScope(string $scope, int $scopeValue, $possibilityToCheck): array {
         $occurance = 0;
         $lastCell = 0;
         foreach ($this->possibilities as $cell => $possibilitiesArray) {
-            if ( $this->getCellRow($cell) === $row && isset($possibilitiesArray[$possibilityToCheck]) && $possibilitiesArray[$possibilityToCheck]) {
-                $occurance++;
-                $lastCell = $cell;
+            if ( isset($possibilitiesArray[$possibilityToCheck]) && $possibilitiesArray[$possibilityToCheck]) {
+                if (    ( 'row' === $scope && $this->getCellRow($cell) === $scopeValue )
+                        || ( 'column' === $scope && $this->getCellColumn($cell) === $scopeValue )
+                        || ( 'cadran' === $scope && $this->getCellCadran($cell) === $scopeValue ) ) {
+                    $occurance++;
+                    $lastCell = $cell;
+                }
             }
         }
         return [
@@ -176,12 +188,12 @@ class SudokuSolver
     /**
      * @return int
      */
-    private function insertUniquePossibilitiesInRows(): int {
+    private function insertUniquePossibilitiesInScope(string $scope): int {
         $startedPossibilities = count($this->possibilities);
 
-        for ( $row = 1; $row<=9; $row++) {
+        for ( $scopeValue = 1; $scopeValue<=9; $scopeValue++) {
             for ( $possibilityToCheck = 1; $possibilityToCheck<=9; $possibilityToCheck++) {
-                $occurances = $this->getPossibilityOccuranceInRow($row, $possibilityToCheck);
+                $occurances = $this->getPossibilityOccuranceInScope($scope, $scopeValue, $possibilityToCheck);
                 if ( 1 === $occurances['total'] ) {
                     $this->setValue($occurances['lastOccurance'], $possibilityToCheck);
                 }
@@ -191,42 +203,12 @@ class SudokuSolver
         return count($this->possibilities)-$startedPossibilities;
     }
 
-    /**
-     * @param $column
-     * @param $possibilityToCheck
-     *
-     * @return int
-     */
-    private function getPossibilityOccuranceInColumn($column, $possibilityToCheck): array {
-        /* TODO possible to do it in less loops by checking multiple rows in the foreach */
-        $occurance = 0;
-        $lastCell = 0;
-        foreach ($this->possibilities as $cell => $possibilitiesArray) {
-            if ($this->getCellColumn($cell) === $column && isset($possibilitiesArray[$possibilityToCheck]) && $possibilitiesArray[$possibilityToCheck]) {
-                $occurance++;
-                $lastCell = $cell;
-            }
-        }
-        return [
-            'total' => $occurance,
-            'lastOccurance' => $lastCell
-        ];
-    }
-
-    /**
-     * @return int
-     */
-    private function insertUniquePossibilitiesInColumns(): int {
+    private function setUniquePossibilitiesIntoValues(): int {
         $startedPossibilities = count($this->possibilities);
 
-        for ( $column = 1; $column<=9; $column++) {
-            for ( $possibilityToCheck = 1; $possibilityToCheck<=9; $possibilityToCheck++) {
-                $occurances = $this->getPossibilityOccuranceInColumn($column, $possibilityToCheck);
-                if ( 1 === $occurances['total'] ) {
-                    $this->setValue($occurances['lastOccurance'], $possibilityToCheck);
-                }
-            }
-        }
+        $this->insertUniquePossibilitiesInScope('row');
+        $this->insertUniquePossibilitiesInScope('column');
+//        $this->insertUniquePossibilitiesInScope('cadran');
 
         return count($this->possibilities)-$startedPossibilities;
     }
@@ -240,9 +222,8 @@ class SudokuSolver
             $addedNumbers = 0;
 
             $addedNumbers += $this->majPossibilitiesToValues();
-            $addedNumbers += $this->insertUniquePossibilitiesInRows();
-            $addedNumbers += $this->insertUniquePossibilitiesInColumns();
-            /* TODO strategy insertUniquePossibilitiesInCadrans */
+            $addedNumbers += $this->setUniquePossibilitiesIntoValues();
+
         } while ( 0 !== count($this->possibilities) && 0 !== $addedNumbers );
 
         return $this;
