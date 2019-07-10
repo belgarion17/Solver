@@ -132,25 +132,59 @@ function doTestDifficile() {
     $sudokuSolver->showSolvedSoduku(true);
 }
 
+function doTestTresDifficile() {
+    $sudokuSolver = new SudokuSolver();
+
+    $sudokuSolver->setValue(22, 6);
+    $sudokuSolver->setValue(23, 2);
+    $sudokuSolver->setValue(41, 4);
+    $sudokuSolver->setValue(52, 1);
+    $sudokuSolver->setValue(62, 3);
+    $sudokuSolver->setValue(71, 7);
+    $sudokuSolver->setValue(83, 8);
+    $sudokuSolver->setValue(93, 1);
+
+    $sudokuSolver->setValue(14, 5);
+    $sudokuSolver->setValue(24, 4);
+    $sudokuSolver->setValue(25, 7);
+    $sudokuSolver->setValue(34, 8);
+    $sudokuSolver->setValue(76, 8);
+    $sudokuSolver->setValue(85, 2);
+    $sudokuSolver->setValue(86, 1);
+    $sudokuSolver->setValue(96, 6);
+
+    $sudokuSolver->setValue(17, 4);
+    $sudokuSolver->setValue(27, 3);
+    $sudokuSolver->setValue(39, 6);
+    $sudokuSolver->setValue(48, 9);
+    $sudokuSolver->setValue(58, 6);
+    $sudokuSolver->setValue(69, 5);
+    $sudokuSolver->setValue(87, 9);
+    $sudokuSolver->setValue(88, 7);
+
+    $sudokuSolver->showSolvedSoduku(true);
+}
+
 //doTestEasy();
 //doTestMoyen();
 //doTestDifficile();
+doTestTresDifficile();
 
-if ( isset($_POST) && ! empty($_POST) ) {
-
-    $sudokuSolver = new SudokuSolver();
-
-    foreach ( $_POST as $cell => $value ) {
-        if ( "" !== $value ) {
-            $row = substr($cell, 1, 1);
-            $column = substr($cell, 3, 1);
-            $sudokuSolver->setValue($column*10+$row, (int)$value);
-        }
-    }
-
-    $sudokuSolver->showSolvedSoduku(true);
-
-} else {
-    SudokuSolver::showGetValuesForm();
-}
-
+//if ( isset($_POST) && ! empty($_POST) ) {
+//
+//    $sudokuSolver = new SudokuSolver();
+//
+//    foreach ( $_POST as $cell => $value ) {
+//        if ( "" !== $value ) {
+//            $row = substr($cell, 1, 1);
+//            $column = substr($cell, 3, 1);
+//            $sudokuSolver->setValue($column*10+$row, (int)$value);
+//        }
+//    }
+//
+//    $sudokuSolver->showSolvedSoduku(true);
+//
+//} else {
+//    SudokuSolver::showGetValuesForm();
+//}
+//

@@ -42,6 +42,8 @@ class SudokuSolver
         return $possibilities;
     }
 
+    /* TODO merge updateColumn/Row/Cadran into Scope */
+
     /**
      * @param int $column
      * @param int $value
@@ -208,7 +210,7 @@ class SudokuSolver
 
         $this->insertUniquePossibilitiesInScope('row');
         $this->insertUniquePossibilitiesInScope('column');
-//        $this->insertUniquePossibilitiesInScope('cadran');
+        $this->insertUniquePossibilitiesInScope('cadran');
 
         return count($this->possibilities)-$startedPossibilities;
     }
@@ -223,6 +225,8 @@ class SudokuSolver
 
             $addedNumbers += $this->majPossibilitiesToValues();
             $addedNumbers += $this->setUniquePossibilitiesIntoValues();
+            /* TODO strategie dropPossibilitiesByAlignPair() */
+            /* TODO strategie dropPossibilitiesByAssociatedPair() */
 
         } while ( 0 !== count($this->possibilities) && 0 !== $addedNumbers );
 
