@@ -13,11 +13,6 @@ define('cellSize', 40);
 
 class SudokuSolver
 {
-
-    /*
-        TODO make resolution with strategies, each strategy return the added number
-    */
-
     private $possibilities;
     private $grid;
 
@@ -40,53 +35,6 @@ class SudokuSolver
             $possibilities[$number] = true;
         }
         return $possibilities;
-    }
-
-    /* TODO merge updateColumn/Row/Cadran into Scope */
-
-    /**
-     * @param int $column
-     * @param int $value
-     */
-    private function updateColumn(int $column, int $value): void {
-        foreach ( $this->possibilities as $cell => $possibilitiesArray ) {
-            if ($this->getCellColumn($cell) === $column && null === $this->getValue($cell) ) {
-                unset($this->possibilities[$cell][$value]);
-                if ( 1 === count($this->possibilities[$cell]) ) {
-                    $this->setValue($cell, array_keys($this->possibilities[$cell])[0]);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param int $row
-     * @param int $value
-     */
-    private function updateRow(int $row, int $value): void {
-        foreach ( $this->possibilities as $cell => $possibilitiesArray ) {
-            if ( $this->getCellRow($cell) === $row && null === $this->getValue($cell) ) {
-                unset($this->possibilities[$cell][$value]);
-                if ( 1 === count($this->possibilities[$cell]) ) {
-                    $this->setValue($cell, array_keys($this->possibilities[$cell])[0]);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param int $cadran
-     * @param int $value
-     */
-    private function updateCadran(int $cadran, int $value): void {
-        foreach ( $this->possibilities as $cell => $possibilitiesArray ) {
-            if ( $this->getCellCadran($cell) === $cadran && null === $this->getValue($cell) ) {
-                unset($this->possibilities[$cell][$value]);
-                if ( 1 === count($this->possibilities[$cell]) ) {
-                    $this->setValue($cell, array_keys($this->possibilities[$cell])[0]);
-                }
-            }
-        }
     }
 
     /**
@@ -120,15 +68,47 @@ class SudokuSolver
     }
 
     /**
+     * @param string $scope
+     * @param int $scopeValue
+     * @param int $value
+     */
+    public function updatePossibilitiesInScope(string $scope, int $scopeValue, int $value): void {
+        foreach ( $this->possibilities as $cell => $possibilitiesArray ) {
+            $cellScopeValue = 0;
+            if ( 'row' === $scope ) {
+                $cellScopeValue = $this->getCellRow($cell);
+            } elseif ( 'column' === $scope ) {
+                $cellScopeValue = $this->getCellColumn($cell);
+            } elseif ( 'cadran' === $scope ) {
+                $cellScopeValue = $this->getCellCadran($cell);
+            }
+            if ( $cellScopeValue === $scopeValue && null === $this->getValue($cell) ) {
+                unset($this->possibilities[$cell][$value]);
+                if ( 1 === count($this->possibilities[$cell]) ) {
+                    $this->setValue($cell, array_keys($this->possibilities[$cell])[0]);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param int $cell
+     * @param int $value
+     */
+    public function updatePossibilitiesInAllScopes(int $cell, int $value): void {
+        $this->updatePossibilitiesInScope('column', $this->getCellColumn($cell), $value);
+        $this->updatePossibilitiesInScope('row', $this->getCellRow($cell), $value);
+        $this->updatePossibilitiesInScope('cadran', $this->getCellCadran($cell), $value);
+    }
+
+    /**
      * @param int $cell
      * @param int $value
      */
     public function setValue(int $cell, int $value, bool $asTest = false): void {
         $this->grid[$cell] = $value;
         unset($this->possibilities[$cell]);
-        $this->updateColumn($this->getCellColumn($cell), $value);
-        $this->updateRow($this->getCellRow($cell), $value);
-        $this->updateCadran($this->getCellCadran($cell), $value);
+        $this->updatePossibilitiesInAllScopes($cell, $value);
     }
 
     /**
