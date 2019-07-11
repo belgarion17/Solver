@@ -67,6 +67,20 @@ class SudokuSolver
         return (int)floor(($row-1)/3)*3+(int)floor(($column-1)/3)+1;
     }
 
+    public function getScopeValue(int $cell, string $scope): int {
+        $cellScopeValue = 0;
+
+        if ( 'row' === $scope ) {
+            $cellScopeValue = $this->getCellRow($cell);
+        } elseif ( 'column' === $scope ) {
+            $cellScopeValue = $this->getCellColumn($cell);
+        } elseif ( 'cadran' === $scope ) {
+            $cellScopeValue = $this->getCellCadran($cell);
+        }
+
+        return $cellScopeValue;
+    }
+
     /**
      * @param string $scope
      * @param int $scopeValue
@@ -74,14 +88,9 @@ class SudokuSolver
      */
     public function updatePossibilitiesInScope(string $scope, int $scopeValue, int $value): void {
         foreach ( $this->possibilities as $cell => $possibilitiesArray ) {
-            $cellScopeValue = 0;
-            if ( 'row' === $scope ) {
-                $cellScopeValue = $this->getCellRow($cell);
-            } elseif ( 'column' === $scope ) {
-                $cellScopeValue = $this->getCellColumn($cell);
-            } elseif ( 'cadran' === $scope ) {
-                $cellScopeValue = $this->getCellCadran($cell);
-            }
+
+            $cellScopeValue = $this->getScopeValue($cell, $scope);
+
             if ( $cellScopeValue === $scopeValue && null === $this->getValue($cell) ) {
                 unset($this->possibilities[$cell][$value]);
                 if ( 1 === count($this->possibilities[$cell]) ) {
@@ -134,6 +143,7 @@ class SudokuSolver
                 if ($possibilityValue) {
                     $this->setValue($cell, $possibilityNumber);
                 } else {
+                    continue;
                     /* TODO matching case if a test is running */
                 }
             }
@@ -149,21 +159,21 @@ class SudokuSolver
      * @return array
      */
     private function getPossibilityOccuranceInScope(string $scope, int $scopeValue, $possibilityToCheck): array {
-        $occurance = 0;
+        $occurrence = 0;
         $lastCell = 0;
         foreach ($this->possibilities as $cell => $possibilitiesArray) {
             if ( isset($possibilitiesArray[$possibilityToCheck]) && $possibilitiesArray[$possibilityToCheck]) {
                 if (    ( 'row' === $scope && $this->getCellRow($cell) === $scopeValue )
                         || ( 'column' === $scope && $this->getCellColumn($cell) === $scopeValue )
                         || ( 'cadran' === $scope && $this->getCellCadran($cell) === $scopeValue ) ) {
-                    $occurance++;
+                    $occurrence++;
                     $lastCell = $cell;
                 }
             }
         }
         return [
-            'total' => $occurance,
-            'lastOccurance' => $lastCell
+            'total' => $occurrence,
+            'lastOccurrence' => $lastCell
         ];
     }
 
@@ -175,9 +185,9 @@ class SudokuSolver
 
         for ( $scopeValue = 1; $scopeValue<=9; $scopeValue++) {
             for ( $possibilityToCheck = 1; $possibilityToCheck<=9; $possibilityToCheck++) {
-                $occurances = $this->getPossibilityOccuranceInScope($scope, $scopeValue, $possibilityToCheck);
-                if ( 1 === $occurances['total'] ) {
-                    $this->setValue($occurances['lastOccurance'], $possibilityToCheck);
+                $occurrences = $this->getPossibilityOccuranceInScope($scope, $scopeValue, $possibilityToCheck);
+                if ( 1 === $occurrences['total'] ) {
+                    $this->setValue($occurrences['lastOccurrence'], $possibilityToCheck);
                 }
             }
         }
@@ -266,7 +276,7 @@ class SudokuSolver
                                     $possibility = 1;
                                     for ($subrow=1; $subrow<=3; $subrow++) :
                                         echo '<tr>';
-                                        for ($subcolumn=1; $subcolumn<=3; $subcolumn++) :
+                                        for ($subColumn=1; $subColumn<=3; $subColumn++) :
                                             echo '<td>';
                                             $showPossibility = $this->possibilities[10*$column+$row][$possibility] ?? false;
                                             echo $showPossibility ? $possibility : '' ;
@@ -290,7 +300,18 @@ class SudokuSolver
             </tbody>
         </table>
         <?php
-        var_dump($this->possibilities);
+        var_dump($this->groupCellsByScope('cadran', $this->possibilities));
+    }
+
+    public function groupCellsByScope(string $scope, array $cells) {
+        $groupedCellsArray = [];
+
+        foreach ( $cells as $cell => $isPossible ) {
+            $cellScopeValue = $this->getScopeValue($cell, $scope);
+            $groupedCellsArray[$cellScopeValue][] = $cell;
+        }
+
+        return $groupedCellsArray;
     }
 
     public function showSolvedSoduku(bool $andPossibilities = false): void {
