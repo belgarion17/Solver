@@ -113,6 +113,7 @@ class SudokuSolver
     /**
      * @param int $cell
      * @param int $value
+     * @param bool $asTest
      */
     public function setValue(int $cell, int $value, bool $asTest = false): void {
         $this->grid[$cell] = $value;
@@ -153,7 +154,8 @@ class SudokuSolver
     }
 
     /**
-     * @param $row
+     * @param string $scope
+     * @param int $scopeValue
      * @param $possibilityToCheck
      *
      * @return array
@@ -178,6 +180,8 @@ class SudokuSolver
     }
 
     /**
+     * @param string $scope
+     *
      * @return int
      */
     private function insertUniquePossibilitiesInScope(string $scope): int {
@@ -224,7 +228,10 @@ class SudokuSolver
     }
 
     /**
-     *  Test a possibilitie and return if correct
+     * @param int $cell
+     * @param int $testedValue
+     *
+     * @return bool
      */
     public function makeTest(int $cell, int $testedValue): bool {
 
@@ -241,8 +248,11 @@ class SudokuSolver
                 <?php for ($row=1; $row<=9; $row++) :  ?>
                     <tr>
                         <?php for ($column=1; $column<=9; $column++) :  ?>
+                            <?php
+                                $inputName = 'l'.$row.'c'.$column;
+                            ?>
                             <td>
-                                <input type="number" name="l<?php echo $row; ?>c<?php echo $column; ?>" style="width:<?php echo cellSize; ?>px; height:<?php echo cellSize; ?>px">
+                                <label for="<?php echo $inputName; ?>"></label><input type="number" name="<?php echo $inputName; ?>" id="<?php echo $inputName; ?>" style="width:<?php echo cellSize; ?>px; height:<?php echo cellSize; ?>px">
                             </td>
                         <?php endfor; ?>
                     </tr>
