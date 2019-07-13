@@ -196,6 +196,43 @@ class SudokuSolver
         return $this;
     }
 
+    public function isSolved(): array {
+        $wrongCells = [];
+        $missing = [];
+        $wrongValue = [];
+
+        /* Check for missing values */
+        for ($row=1; $row<=9; $row++) {
+            for ($column=1; $column<=9; $column++) {
+                $cell = 10*$column+$row;
+                if ( ! isset( $this->grid[$cell] ) ) {
+                    $missing[] = $cell;
+                }
+            }
+        }
+
+        /* Check for incorrect values */
+
+        foreach ( $this->availableScopes as $scope ) {
+            for ($scopeValue=1; $scopeValue<=9; $scopeValue++) {
+                $scopeCells = $this->clusteredGridSettedValues[$scope][$scopeValue];
+                $valuesInScope = array_values($scopeCells);
+                $duplicateValues = array_unique(array_diff_assoc($valuesInScope, array_unique($valuesInScope)));
+
+                foreach ( $scopeCells as $cell => $value ) {
+                    if ( in_array($value, $duplicateValues) ) {
+                        $wrongValue[] = $cell;
+                    }
+                }
+
+            }
+        }
+
+        $wrongCells['missing'] = $missing;
+        $wrongCells['wrongValue'] = $wrongValue;
+        return $wrongCells;
+    }
+
     /**
      * @param int $cell
      * @param int $testedValue
@@ -233,7 +270,7 @@ class SudokuSolver
         <?php
     }
 
-    public function showSoduku(bool $andPossibilities = false): void {
+    public function showSoduku(bool $andPossibilities = false, array $wrongCells = [], $showMissing = false): void {
         ?>
         <table style="text-align: center; border: 1px black solid">
             <tbody>
@@ -242,11 +279,13 @@ class SudokuSolver
                     <?php for ($column=1; $column<=9; $column++) :  ?>
                         <td style="border: 1px black solid; width:<?php echo cellSize; ?>px; height:<?php echo cellSize; ?>px; ">
                             <?php
-                            $value = $this->grid[$column*10+$row];
+                            $cell = $column*10+$row;
+                            $value = $this->grid[$cell];
+                            $color = in_array($cell, $wrongCells['wrongValue']) ? 'red' : '#00DD00';
 
                             if ( $andPossibilities ) {
                                 if ( null !== $value ) {
-                                    echo '<span style="color: red; font-weight: bold">';
+                                    echo '<span style="color: '.$color.'; font-weight: bold">';
                                     echo $value;
                                     echo '</span>';
                                 } else {
@@ -279,6 +318,11 @@ class SudokuSolver
             </tbody>
         </table>
         <?php
+        if ( $showMissing ) {
+            foreach ( $wrongCells['missing'] as $cell) {
+                echo('missing values on column '.$this->getCellScope($cell, 'column').' row '.$this->getCellScope($cell, 'row').'<br/>');
+            }
+        }
     }
 
     public function groupCellsByScope(string $scope, array $cells) {
@@ -294,9 +338,9 @@ class SudokuSolver
 
     public function showSolvedSoduku(bool $andPossibilities = false, $withStart = false): void {
         if ( $withStart ) {
-            $this->showSoduku($andPossibilities);
+            $this->showSoduku($andPossibilities, $this->isSolved());
         }
         $this->resolve();
-        $this->showSoduku($andPossibilities);
+        $this->showSoduku($andPossibilities, $this->isSolved(), true);
     }
 }

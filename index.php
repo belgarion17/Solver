@@ -165,10 +165,10 @@ function doTestTresDifficile() {
     $sudokuSolver->showSolvedSoduku(true, true);
 }
 
-doTestEasy();
-doTestMoyen();
+//doTestEasy();
+//doTestMoyen();
 doTestDifficile();
-//doTestTresDifficile();
+doTestTresDifficile();
 
 //if ( isset($_POST) && ! empty($_POST) ) {
 //
