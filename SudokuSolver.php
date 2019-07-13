@@ -15,6 +15,7 @@ class SudokuSolver
 {
     private $possibilities;
     private $grid;
+    private $availableScopes = ['row', 'column', 'cadran'];
 
     public function __construct()
     {
@@ -39,46 +40,22 @@ class SudokuSolver
 
     /**
      * @param int $cell
+     * @param string $scope
      *
      * @return int
      */
-    public function getCellColumn(int $cell): int {
-        return (int)($cell/10);
-    }
-
-
-    /**
-     * @param int $cell
-     *
-     * @return int
-     */
-    public function getCellRow(int $cell): int {
-        return $cell%10;
-    }
-
-    /**
-     * @param int $cell
-     *
-     * @return int
-     */
-    public function getCellCadran(int $cell): int {
-        $row = $this->getCellRow($cell);
-        $column = $this->getCellColumn($cell);
-        return (int)floor(($row-1)/3)*3+(int)floor(($column-1)/3)+1;
-    }
-
-    public function getScopeValue(int $cell, string $scope): int {
-        $cellScopeValue = 0;
-
-        if ( 'row' === $scope ) {
-            $cellScopeValue = $this->getCellRow($cell);
-        } elseif ( 'column' === $scope ) {
-            $cellScopeValue = $this->getCellColumn($cell);
+    public function getCellScope(int $cell, string $scope): int {
+        if ( 'column' === $scope ) {
+            return (int)($cell/10);
+        } elseif ( 'row' === $scope ) {
+            return $cell%10;
         } elseif ( 'cadran' === $scope ) {
-            $cellScopeValue = $this->getCellCadran($cell);
+            $row = $this->getCellScope($cell, 'row');
+            $column = $this->getCellScope($cell, 'column');
+            return (int)floor(($row-1)/3)*3+(int)floor(($column-1)/3)+1;
         }
 
-        return $cellScopeValue;
+        return 0;
     }
 
     /**
@@ -89,7 +66,7 @@ class SudokuSolver
     public function updatePossibilitiesInScope(string $scope, int $scopeValue, int $value): void {
         foreach ( $this->possibilities as $cell => $possibilitiesArray ) {
 
-            $cellScopeValue = $this->getScopeValue($cell, $scope);
+            $cellScopeValue = $this->getCellScope($cell, $scope);
 
             if ( $cellScopeValue === $scopeValue && null === $this->getValue($cell) ) {
                 unset($this->possibilities[$cell][$value]);
@@ -103,22 +80,14 @@ class SudokuSolver
     /**
      * @param int $cell
      * @param int $value
-     */
-    public function updatePossibilitiesInAllScopes(int $cell, int $value): void {
-        $this->updatePossibilitiesInScope('column', $this->getCellColumn($cell), $value);
-        $this->updatePossibilitiesInScope('row', $this->getCellRow($cell), $value);
-        $this->updatePossibilitiesInScope('cadran', $this->getCellCadran($cell), $value);
-    }
-
-    /**
-     * @param int $cell
-     * @param int $value
      * @param bool $asTest
      */
     public function setValue(int $cell, int $value, bool $asTest = false): void {
         $this->grid[$cell] = $value;
         unset($this->possibilities[$cell]);
-        $this->updatePossibilitiesInAllScopes($cell, $value);
+        foreach ( $this->availableScopes as $scope ) {
+            $this->updatePossibilitiesInScope($scope, $this->getCellScope($cell, $scope), $value);
+        }
     }
 
     /**
@@ -165,9 +134,7 @@ class SudokuSolver
         $lastCell = 0;
         foreach ($this->possibilities as $cell => $possibilitiesArray) {
             if ( isset($possibilitiesArray[$possibilityToCheck]) && $possibilitiesArray[$possibilityToCheck]) {
-                if (    ( 'row' === $scope && $this->getCellRow($cell) === $scopeValue )
-                        || ( 'column' === $scope && $this->getCellColumn($cell) === $scopeValue )
-                        || ( 'cadran' === $scope && $this->getCellCadran($cell) === $scopeValue ) ) {
+                if ( $this->getCellScope($cell, $scope) === $scopeValue ) {
                     $occurrence++;
                     $lastCell = $cell;
                 }
@@ -202,9 +169,9 @@ class SudokuSolver
     private function setUniquePossibilitiesIntoValues(): int {
         $startedPossibilities = count($this->possibilities);
 
-        $this->insertUniquePossibilitiesInScope('row');
-        $this->insertUniquePossibilitiesInScope('column');
-        $this->insertUniquePossibilitiesInScope('cadran');
+        foreach ( $this->availableScopes as $scope ) {
+            $this->insertUniquePossibilitiesInScope($scope);
+        }
 
         return count($this->possibilities)-$startedPossibilities;
     }
@@ -221,7 +188,6 @@ class SudokuSolver
             $addedNumbers += $this->setUniquePossibilitiesIntoValues();
             /* TODO strategie dropPossibilitiesByAlignPair() */
             /* TODO strategie dropPossibilitiesByAssociatedPair() */
-
         } while ( 0 !== count($this->possibilities) && 0 !== $addedNumbers );
 
         return $this;
@@ -310,21 +276,23 @@ class SudokuSolver
             </tbody>
         </table>
         <?php
-        var_dump($this->groupCellsByScope('cadran', $this->possibilities));
     }
 
     public function groupCellsByScope(string $scope, array $cells) {
         $groupedCellsArray = [];
 
-        foreach ( $cells as $cell => $isPossible ) {
-            $cellScopeValue = $this->getScopeValue($cell, $scope);
+        foreach ( $cells as $cell ) {
+            $cellScopeValue = $this->getCellScope($cell, $scope);
             $groupedCellsArray[$cellScopeValue][] = $cell;
         }
 
         return $groupedCellsArray;
     }
 
-    public function showSolvedSoduku(bool $andPossibilities = false): void {
+    public function showSolvedSoduku(bool $andPossibilities = false, $withStart = false): void {
+        if ( $withStart ) {
+            $this->showSoduku($andPossibilities);
+        }
         $this->resolve();
         $this->showSoduku($andPossibilities);
     }

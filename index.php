@@ -51,7 +51,7 @@ function doTestEasy() {
     $sudokuSolver->setValue(89, 9);
     $sudokuSolver->setValue(99, 6);
 
-    $sudokuSolver->showSolvedSoduku(true);
+    $sudokuSolver->showSolvedSoduku(true, true);
 }
 
 function doTestMoyen() {
@@ -92,7 +92,7 @@ function doTestMoyen() {
     $sudokuSolver->setValue(89, 5);
     $sudokuSolver->setValue(99, 7);
 
-    $sudokuSolver->showSolvedSoduku(true);
+    $sudokuSolver->showSolvedSoduku(true, true);
 }
 
 function doTestDifficile() {
@@ -129,7 +129,7 @@ function doTestDifficile() {
     $sudokuSolver->setValue(89, 7);
     $sudokuSolver->setValue(97, 1);
 
-    $sudokuSolver->showSolvedSoduku(true);
+    $sudokuSolver->showSolvedSoduku(true, true);
 }
 
 function doTestTresDifficile() {
@@ -162,13 +162,13 @@ function doTestTresDifficile() {
     $sudokuSolver->setValue(87, 9);
     $sudokuSolver->setValue(88, 7);
 
-    $sudokuSolver->showSolvedSoduku(true);
+    $sudokuSolver->showSolvedSoduku(true, true);
 }
 
-//doTestEasy();
-//doTestMoyen();
-//doTestDifficile();
-doTestTresDifficile();
+doTestEasy();
+doTestMoyen();
+doTestDifficile();
+//doTestTresDifficile();
 
 //if ( isset($_POST) && ! empty($_POST) ) {
 //
