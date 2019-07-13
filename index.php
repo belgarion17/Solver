@@ -10,6 +10,9 @@ include __DIR__.'/SudokuSolver.php';
 use \Solver\SudokuSolver;
 
 function doTestEasy() {
+
+    echo '<h1>Making a easy test.</h1>';
+
     $sudokuSolver = new SudokuSolver();
 
     $sudokuSolver->setValue(11, 9);
@@ -55,6 +58,9 @@ function doTestEasy() {
 }
 
 function doTestMoyen() {
+
+    echo '<h1>Making a middle test.</h1>';
+
     $sudokuSolver = new SudokuSolver();
 
     $sudokuSolver->setValue(11, 9);
@@ -96,6 +102,9 @@ function doTestMoyen() {
 }
 
 function doTestDifficile() {
+
+    echo '<h1>Making a difficult test.</h1>';
+
     $sudokuSolver = new SudokuSolver();
 
     $sudokuSolver->setValue(21, 4);
@@ -132,7 +141,48 @@ function doTestDifficile() {
     $sudokuSolver->showSolvedSoduku(true, true);
 }
 
+function doTestDifficile2() {
+
+    echo '<h1>Making a difficult test.</h1>';
+
+    $sudokuSolver = new SudokuSolver();
+
+    $sudokuSolver->setValue(21, 6);
+    $sudokuSolver->setValue(31, 3);
+    $sudokuSolver->setValue(53, 8);
+    $sudokuSolver->setValue(63, 5);
+    $sudokuSolver->setValue(72, 1);
+    $sudokuSolver->setValue(81, 7);
+    $sudokuSolver->setValue(83, 4);
+    $sudokuSolver->setValue(92, 9);
+    $sudokuSolver->setValue(14, 2);
+    $sudokuSolver->setValue(16, 6);
+    $sudokuSolver->setValue(34, 1);
+    $sudokuSolver->setValue(44, 9);
+    $sudokuSolver->setValue(54, 7);
+    $sudokuSolver->setValue(64, 3);
+    $sudokuSolver->setValue(46, 2);
+    $sudokuSolver->setValue(56, 5);
+    $sudokuSolver->setValue(66, 1);
+    $sudokuSolver->setValue(76, 3);
+    $sudokuSolver->setValue(94, 5);
+    $sudokuSolver->setValue(96, 4);
+    $sudokuSolver->setValue(18, 7);
+    $sudokuSolver->setValue(27, 1);
+    $sudokuSolver->setValue(29, 8);
+    $sudokuSolver->setValue(38, 4);
+    $sudokuSolver->setValue(47, 3);
+    $sudokuSolver->setValue(57, 2);
+    $sudokuSolver->setValue(79, 4);
+    $sudokuSolver->setValue(89, 1);
+
+    $sudokuSolver->showSolvedSoduku(true, true);
+}
+
 function doTestTresDifficile() {
+
+    echo '<h1>Making a very difficult test.</h1>';
+
     $sudokuSolver = new SudokuSolver();
 
     $sudokuSolver->setValue(22, 6);
@@ -168,7 +218,7 @@ function doTestTresDifficile() {
 //doTestEasy();
 //doTestMoyen();
 doTestDifficile();
-doTestTresDifficile();
+//doTestTresDifficile();
 
 //if ( isset($_POST) && ! empty($_POST) ) {
 //

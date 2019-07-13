@@ -85,11 +85,13 @@ class SudokuSolver
      * @param bool $asTest
      */
     public function setValue(int $cell, int $value, bool $asTest = false): void {
-        $this->grid[$cell] = $value;
-        unset($this->possibilities[$cell]);
-        foreach ( $this->availableScopes as $scope ) {
-            $this->updatePossibilitiesInScope($scope, $this->getCellScope($cell, $scope), $value);
-            $this->clusteredGridSettedValues[$scope][$this->getCellScope($cell, $scope)][$cell] = $value;
+        if ( ! isset($this->grid[$cell]) ) {
+            $this->grid[$cell] = $value;
+            unset($this->possibilities[$cell]);
+            foreach ( $this->availableScopes as $scope ) {
+                $this->updatePossibilitiesInScope($scope, $this->getCellScope($cell, $scope), $value);
+                $this->clusteredGridSettedValues[$scope][$this->getCellScope($cell, $scope)][$cell] = $value;
+            }
         }
     }
 
@@ -179,6 +181,63 @@ class SudokuSolver
         return count($this->possibilities)-$startedPossibilities;
     }
 
+    public function getCellsAppreranceBypossibilities(array $cells): array {
+        $possibilitiesArray = [];
+
+        foreach ($cells as $cell) {
+            $cellPossiblities = $this->possibilities[$cell];
+            foreach ($cellPossiblities as $cellPossiblity => $possible) {
+                if ($possible) {
+                    $possibilitiesArray[$cellPossiblity][] = $cell;
+                }
+            }
+        }
+
+        return $possibilitiesArray;
+    }
+
+    public function dropPossibilyUsingPair(int $pair, int $possibilityNumber, string $scope): void {
+        foreach ( $this->groupCellsByScope($scope, array_keys($this->possibilities))[$this->getCellScope($pair, $scope)] as $cellInScopeNotSetted ) {
+            $cellInScopeNotSetted = (int)$cellInScopeNotSetted;
+            if ( $this->getCellScope( $cellInScopeNotSetted, 'cadran' ) === $this->getCellScope( $pair, 'cadran' ) ) {
+                continue;
+            } elseif ( isset($this->possibilities[$cellInScopeNotSetted][$possibilityNumber]) && $this->possibilities[$cellInScopeNotSetted][$possibilityNumber] ) {
+                unset($this->possibilities[$cellInScopeNotSetted][$possibilityNumber]);
+            }
+        }
+    }
+
+    public function dropPossibilitiesByAlignPair(): int {
+        $startedPossibilities = count($this->possibilities);
+        $cellsGroupedByCadran = $this->groupCellsByScope('cadran', array_keys($this->possibilities));
+
+        foreach ($cellsGroupedByCadran as $cadranNumber => $cells) {
+            foreach ($this->getCellsAppreranceBypossibilities($cells) as $possibilityNumber => $cellsArray) {
+                $possibilityNumber = (int)$possibilityNumber;
+                $cellsWithPossibilityCount = count($cellsArray);
+                if ($cellsWithPossibilityCount > 3 || 1 === $cellsWithPossibilityCount) {
+                    continue;
+                } else if ( 2 === $cellsWithPossibilityCount ) {
+                    if ($this->getCellScope($cellsArray[0], 'row') === $this->getCellScope($cellsArray[1], 'row')) {
+                        $this->dropPossibilyUsingPair($cellsArray[0], $possibilityNumber, 'row');
+                    } elseif ($this->getCellScope($cellsArray[0], 'column') === $this->getCellScope($cellsArray[1], 'column')) {
+                        $this->dropPossibilyUsingPair($cellsArray[0], $possibilityNumber, 'column');
+                    }
+                } elseif ( 3 === $cellsWithPossibilityCount ) {
+                    if ($this->getCellScope($cellsArray[0], 'row') === $this->getCellScope($cellsArray[1], 'row')
+                        && $this->getCellScope($cellsArray[1], 'row') === $this->getCellScope($cellsArray[2], 'row')) {
+                        $this->dropPossibilyUsingPair($cellsArray[0], $possibilityNumber, 'row');
+                    } elseif ($this->getCellScope($cellsArray[0], 'column') === $this->getCellScope($cellsArray[1], 'column')
+                            && $this->getCellScope($cellsArray[1], 'column') === $this->getCellScope($cellsArray[2], 'column')) {
+                        $this->dropPossibilyUsingPair($cellsArray[0], $possibilityNumber, 'column');
+                    }
+                }
+            }
+        }
+
+        return $startedPossibilities-count($this->possibilities);
+    }
+
     /**
      * @return SudokuSolver
      */
@@ -189,7 +248,8 @@ class SudokuSolver
 
             $addedNumbers += $this->majPossibilitiesToValues();
             $addedNumbers += $this->setUniquePossibilitiesIntoValues();
-            /* TODO strategie dropPossibilitiesByAlignPair() */
+            $addedNumbers += $this->dropPossibilitiesByAlignPair();
+
             /* TODO strategie dropPossibilitiesByAssociatedPair() */
         } while ( 0 !== count($this->possibilities) && 0 !== $addedNumbers );
 
@@ -215,7 +275,10 @@ class SudokuSolver
 
         foreach ( $this->availableScopes as $scope ) {
             for ($scopeValue=1; $scopeValue<=9; $scopeValue++) {
-                $scopeCells = $this->clusteredGridSettedValues[$scope][$scopeValue];
+                $scopeCells = [];
+                if ( isset($this->clusteredGridSettedValues[$scope]) && isset($this->clusteredGridSettedValues[$scope][$scopeValue]) ) {
+                    $scopeCells = $this->clusteredGridSettedValues[$scope][$scopeValue];
+                }
                 $valuesInScope = array_values($scopeCells);
                 $duplicateValues = array_unique(array_diff_assoc($valuesInScope, array_unique($valuesInScope)));
 
@@ -270,7 +333,7 @@ class SudokuSolver
         <?php
     }
 
-    public function showSoduku(bool $andPossibilities = false, array $wrongCells = [], $showMissing = false): void {
+    public function showSudoku(bool $andPossibilities = false, array $wrongCells = [], $showMissing = false): void {
         ?>
         <table style="text-align: center; border: 1px black solid">
             <tbody>
@@ -281,7 +344,7 @@ class SudokuSolver
                             <?php
                             $cell = $column*10+$row;
                             $value = $this->grid[$cell];
-                            $color = in_array($cell, $wrongCells['wrongValue']) ? 'red' : '#00DD00';
+                            $color = ( isset($wrongCells['wrongValue']) && in_array($cell, $wrongCells['wrongValue']) ) ? 'red' : '#00DD00';
 
                             if ( $andPossibilities ) {
                                 if ( null !== $value ) {
@@ -338,9 +401,9 @@ class SudokuSolver
 
     public function showSolvedSoduku(bool $andPossibilities = false, $withStart = false): void {
         if ( $withStart ) {
-            $this->showSoduku($andPossibilities, $this->isSolved());
+            $this->showSudoku($andPossibilities, $this->isSolved());
         }
         $this->resolve();
-        $this->showSoduku($andPossibilities, $this->isSolved(), true);
+        $this->showSudoku($andPossibilities, $this->isSolved(), false);
     }
 }
