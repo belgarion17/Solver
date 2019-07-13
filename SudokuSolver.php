@@ -16,9 +16,11 @@ class SudokuSolver
     private $possibilities;
     private $grid;
     private $availableScopes = ['row', 'column', 'cadran'];
+    private $clusteredGridSettedValues;
 
     public function __construct()
     {
+        $this->clusteredGridSettedValues = [];
         for ($column=1; $column<=9; $column++) {
             for ($row=1; $row<=9; $row++) {
                 $this->possibilities[$column*10+$row] = $this::initCell();
@@ -87,6 +89,7 @@ class SudokuSolver
         unset($this->possibilities[$cell]);
         foreach ( $this->availableScopes as $scope ) {
             $this->updatePossibilitiesInScope($scope, $this->getCellScope($cell, $scope), $value);
+            $this->clusteredGridSettedValues[$scope][$this->getCellScope($cell, $scope)][$cell] = $value;
         }
     }
 
