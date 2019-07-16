@@ -216,8 +216,8 @@ function doTestTresDifficile() {
 }
 
 //doTestEasy();
-//doTestMoyen();
-doTestDifficile();
+doTestMoyen();
+//doTestDifficile();
 //doTestTresDifficile();
 
 //if ( isset($_POST) && ! empty($_POST) ) {

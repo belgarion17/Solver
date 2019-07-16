@@ -320,8 +320,8 @@ class SudokuSolver
                             <?php
                                 $inputName = 'l'.$row.'c'.$column;
                             ?>
-                            <td>
-                                <label for="<?php echo $inputName; ?>"></label><input type="number" name="<?php echo $inputName; ?>" id="<?php echo $inputName; ?>" style="width:<?php echo cellSize; ?>px; height:<?php echo cellSize; ?>px">
+                            <td style="<?php echo ( $column%3 === 0 && $column !== 9 ) ? 'border-right: 1px solid black; padding-right: 3px; ' : ''; ?><?php echo ( $row%3 === 0 && $row !== 9 ) ? 'border-bottom: 1px solid black; padding-bottom: 3px;' : ''; ?>">
+                                <label for="<?php echo $inputName; ?>"></label><input type="text" name="<?php echo $inputName; ?>" id="<?php echo $inputName; ?>" style="width:<?php echo cellSize; ?>px; height:<?php echo cellSize; ?>px">
                             </td>
                         <?php endfor; ?>
                     </tr>
@@ -340,7 +340,13 @@ class SudokuSolver
             <?php for ($row=1; $row<=9; $row++) :  ?>
                 <tr>
                     <?php for ($column=1; $column<=9; $column++) :  ?>
-                        <td style="border: 1px black solid; width:<?php echo cellSize; ?>px; height:<?php echo cellSize; ?>px; ">
+                        <td style="
+                                border-left:<?php echo $column%3 === 1 ? '3' : '1'; ?>px solid black;
+                                <?php echo $column === 9 ? 'border-right: 3px solid black;' : ''; ?>
+                                border-top:<?php echo $row%3 === 1 ? '3' : '1'; ?>px solid black;
+                                <?php echo $row === 9 ? 'border-bottom: 3px solid black;' : ''; ?>
+                                width:<?php echo cellSize; ?>px; height:<?php echo cellSize; ?>px;
+                                ">
                             <?php
                             $cell = $column*10+$row;
                             $value = $this->grid[$cell];
