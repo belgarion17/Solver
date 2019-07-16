@@ -312,7 +312,7 @@ class SudokuSolver
     static function showGetValuesForm(): void {
         ?>
         <form method="post">
-            <table style="text-align: center; border: 1px black solid">
+            <table style="text-align: center; border: 1px black solid; margin-bottom: 40px">
                 <tbody style="text-align: center">
                 <?php for ($row=1; $row<=9; $row++) :  ?>
                     <tr>
@@ -320,7 +320,7 @@ class SudokuSolver
                             <?php
                                 $inputName = 'l'.$row.'c'.$column;
                             ?>
-                            <td style="<?php echo ( $column%3 === 0 && $column !== 9 ) ? 'border-right: 1px solid black; padding-right: 3px; ' : ''; ?><?php echo ( $row%3 === 0 && $row !== 9 ) ? 'border-bottom: 1px solid black; padding-bottom: 3px;' : ''; ?>">
+                            <td style="<?php echo ( $column%3 === 0 && $column !== 9 ) ? 'border-right: 2px solid black; padding-right: 3px; ' : ''; ?><?php echo ( $row%3 === 0 && $row !== 9 ) ? 'border-bottom: 2px solid black; padding-bottom: 3px;' : ''; ?>">
                                 <label for="<?php echo $inputName; ?>"></label><input type="text" name="<?php echo $inputName; ?>" id="<?php echo $inputName; ?>" style="width:<?php echo cellSize; ?>px; height:<?php echo cellSize; ?>px">
                             </td>
                         <?php endfor; ?>
@@ -328,14 +328,15 @@ class SudokuSolver
                 <?php endfor; ?>
                 </tbody>
             </table>
-            <button type="submit">Envoyer</button>
+            <button type="submit" name="calculer">Envoyer</button>
+            <button type="submit" name="generer">Générer code</button>
         </form>
         <?php
     }
 
     public function showSudoku(bool $andPossibilities = false, array $wrongCells = [], $showMissing = false): void {
         ?>
-        <table style="text-align: center; border: 1px black solid">
+        <table style="text-align: center; border: 1px black solid; margin-bottom: 40px;">
             <tbody>
             <?php for ($row=1; $row<=9; $row++) :  ?>
                 <tr>

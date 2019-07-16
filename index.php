@@ -215,26 +215,75 @@ function doTestTresDifficile() {
     $sudokuSolver->showSolvedSoduku(true, true);
 }
 
+function doTestTresDifficile2() {
+
+    echo '<h1>Making a very difficult test.</h1>';
+
+    $sudokuSolver = new SudokuSolver();
+
+    $sudokuSolver->setValue(11, 2);
+    $sudokuSolver->setValue(31, 6);
+    $sudokuSolver->setValue(81, 5);
+    $sudokuSolver->setValue(12, 8);
+    $sudokuSolver->setValue(72, 3);
+    $sudokuSolver->setValue(92, 4);
+    $sudokuSolver->setValue(23, 5);
+    $sudokuSolver->setValue(33, 9);
+    $sudokuSolver->setValue(93, 6);
+    $sudokuSolver->setValue(44, 3);
+    $sudokuSolver->setValue(54, 8);
+    $sudokuSolver->setValue(64, 7);
+    $sudokuSolver->setValue(55, 4);
+    $sudokuSolver->setValue(75, 2);
+    $sudokuSolver->setValue(85, 1);
+    $sudokuSolver->setValue(36, 4);
+    $sudokuSolver->setValue(56, 9);
+    $sudokuSolver->setValue(96, 5);
+    $sudokuSolver->setValue(37, 1);
+    $sudokuSolver->setValue(28, 7);
+    $sudokuSolver->setValue(78, 5);
+    $sudokuSolver->setValue(88, 9);
+    $sudokuSolver->setValue(19, 9);
+    $sudokuSolver->setValue(29, 8);
+    $sudokuSolver->setValue(59, 7);
+    $sudokuSolver->setValue(69, 3);
+    $sudokuSolver->setValue(89, 6);
+
+    $sudokuSolver->showSolvedSoduku(true, true);
+}
+
 //doTestEasy();
-doTestMoyen();
+//doTestMoyen();
 //doTestDifficile();
-//doTestTresDifficile();
+doTestTresDifficile2();
 
 //if ( isset($_POST) && ! empty($_POST) ) {
 //
-//    $sudokuSolver = new SudokuSolver();
-//
-//    foreach ( $_POST as $cell => $value ) {
-//        if ( "" !== $value ) {
-//            $row = substr($cell, 1, 1);
-//            $column = substr($cell, 3, 1);
-//            $sudokuSolver->setValue($column*10+$row, (int)$value);
+//    if ( isset( $_POST['generer'] ) ) {
+//        foreach ( $_POST as $cell => $value ) {
+//            if ( "" !== $value ) {
+//                $row = substr($cell, 1, 1);
+//                $column = substr($cell, 3, 1);
+//                echo '$sudokuSolver->setValue('.$column.$row.', '.$value.');<br/>';
+//            }
 //        }
+//    } elseif ( isset( $_POST['calculer'] ) ) {
+//        $sudokuSolver = new SudokuSolver();
+//
+//        foreach ( $_POST as $cell => $value ) {
+//            if ( "" !== $value ) {
+//                $row = substr($cell, 1, 1);
+//                $column = substr($cell, 3, 1);
+//                $sudokuSolver->setValue($column*10+$row, (int)$value);
+//            }
+//        }
+//
+//        $sudokuSolver->showSolvedSoduku(true);
 //    }
 //
-//    $sudokuSolver->showSolvedSoduku(true);
+//
 //
 //} else {
 //    SudokuSolver::showGetValuesForm();
 //}
-
+//
