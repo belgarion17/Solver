@@ -171,6 +171,9 @@ class SudokuSolver
         return count($this->possibilities)-$startedPossibilities;
     }
 
+    /**
+     * @return int
+     */
     private function setUniquePossibilitiesIntoValues(): int {
         $startedPossibilities = count($this->possibilities);
 
@@ -181,6 +184,11 @@ class SudokuSolver
         return count($this->possibilities)-$startedPossibilities;
     }
 
+    /**
+     * @param array $cells
+     *
+     * @return array
+     */
     public function getCellsAppreranceBypossibilities(array $cells): array {
         $possibilitiesArray = [];
 
@@ -196,6 +204,11 @@ class SudokuSolver
         return $possibilitiesArray;
     }
 
+    /**
+     * @param int $pair
+     * @param int $possibilityNumber
+     * @param string $scope
+     */
     public function dropPossibilyUsingPair(int $pair, int $possibilityNumber, string $scope): void {
         foreach ( $this->groupCellsByScope($scope, array_keys($this->possibilities))[$this->getCellScope($pair, $scope)] as $cellInScopeNotSetted ) {
             $cellInScopeNotSetted = (int)$cellInScopeNotSetted;
@@ -207,6 +220,9 @@ class SudokuSolver
         }
     }
 
+    /**
+     * @return int
+     */
     public function dropPossibilitiesByAlignPair(): int {
         $startedPossibilities = count($this->possibilities);
         $cellsGroupedByCadran = $this->groupCellsByScope('cadran', array_keys($this->possibilities));
@@ -239,6 +255,109 @@ class SudokuSolver
     }
 
     /**
+     * @param string $scope
+     * @param array $possiblePairs
+     *
+     * @return array
+     */
+    public function getAssociatedPairsByScope(string $scope, array $possiblePairs): array {
+        $pairs = [];
+        if ( empty($possiblePairs) ) {
+            return $pairs;
+        }
+
+        $possiblePairsWithPossibilitiesGroupedByScope = [];
+
+        $possiblePairsGroupedByScope = $this->groupCellsByScope($scope, array_keys($possiblePairs));
+        foreach ($possiblePairsGroupedByScope as $ScopeValue => $cellsArray) {
+            if ( 1 === count($cellsArray) ) {
+                unset($possiblePairs[$cellsArray[0]]);
+            }
+        }
+
+        $possiblePairsGroupedByScope = $this->groupCellsByScope($scope, array_keys($possiblePairs));
+        foreach ( $possiblePairsGroupedByScope as $ScopeValue => $cellsArray ) {
+            foreach ($cellsArray as $order => $cell) {
+                $possiblePairsWithPossibilitiesGroupedByScope[$ScopeValue][$cell] = $this->possibilities[$cell];
+            }
+        }
+
+        foreach ($possiblePairsWithPossibilitiesGroupedByScope as $ScopeValue => $cellsArrayWithPossibilities) {
+            foreach ( $cellsArrayWithPossibilities as $cell1 => $possibilities1) {
+                foreach ( $cellsArrayWithPossibilities as $cell2 => $possibilities2) {
+                    if ($cell1 === $cell2) {
+                        continue;
+                    }
+
+                    $possibilitiesValues1 = array_keys($possibilities1);
+                    $possibilitiesValues2 = array_keys($possibilities2);
+
+                    if ( $possibilitiesValues1[0] === $possibilitiesValues2[0] && $possibilitiesValues1[1] === $possibilitiesValues2[1]) {
+                        $pairs[] = [$cell1, $cell2];
+                    }
+                }
+            }
+        }
+
+        $toDelete = [];
+        foreach ( $pairs as $order1 => $pair1 ) {
+            foreach ( $pairs as $order2 => $pair2 ) {
+                if ( $order1 === $order2 ) {
+                    continue;
+                }
+
+                if ( $pair1[0] === $pair2[1] && $pair1[1] === $pair2[0] && !isset($toDelete[$order2])) {
+                    $toDelete[] = $order2;
+                }
+            }
+        }
+
+        foreach ($toDelete as $orderToDelete) {
+            unset($pairs[$orderToDelete]);
+        }
+
+        return $pairs;
+    }
+
+    /**
+     * @return int
+     */
+    public function dropPossibilitiesByAssociatedPair() {
+        $startedPossibilities = count($this->possibilities);
+        $possiblePairs = [];
+        $pairs = [];
+
+        foreach ($this->possibilities as $cell => $cellPossibilities) {
+            if ( 2 === count($cellPossibilities) ) {
+                $possiblePairs[$cell] = $cellPossibilities;
+            }
+        }
+
+        foreach ( $this->availableScopes as $scope) {
+            $pairs[$scope] = $this->getAssociatedPairsByScope($scope, $possiblePairs);
+        }
+
+        foreach ( $pairs as $scope => $pairsArray ) {
+            foreach ( $pairsArray as $order => $pairArray ) {
+                foreach ( $this->possibilities as $cell => $possiblilities ) {
+                    if ( $this->getCellScope($pairArray[0], $scope) === $this->getCellScope($cell, $scope)
+                        && !in_array($cell, $pairArray)
+                    ) {
+                        foreach ( $this->possibilities[$pairArray[0]] as $possibility => $boolValue ) {
+
+                            if ( isset( $this->possibilities[$cell][$possibility] ) ) {
+                                unset( $this->possibilities[$cell][$possibility] );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $startedPossibilities-count($this->possibilities);
+    }
+
+    /**
      * @return SudokuSolver
      */
     public function resolve(): self {
@@ -249,13 +368,17 @@ class SudokuSolver
             $addedNumbers += $this->majPossibilitiesToValues();
             $addedNumbers += $this->setUniquePossibilitiesIntoValues();
             $addedNumbers += $this->dropPossibilitiesByAlignPair();
+            $addedNumbers += $this->dropPossibilitiesByAssociatedPair();
 
-            /* TODO strategie dropPossibilitiesByAssociatedPair() */
+            /* TODO strategie dropPossibilitiesClosedSets() */
         } while ( 0 !== count($this->possibilities) && 0 !== $addedNumbers );
 
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function isSolved(): array {
         $wrongCells = [];
         $missing = [];
@@ -334,6 +457,11 @@ class SudokuSolver
         <?php
     }
 
+    /**
+     * @param bool $andPossibilities
+     * @param array $wrongCells
+     * @param bool $showMissing
+     */
     public function showSudoku(bool $andPossibilities = false, array $wrongCells = [], $showMissing = false): void {
         ?>
         <table style="text-align: center; border: 1px black solid; margin-bottom: 40px;">
@@ -395,6 +523,12 @@ class SudokuSolver
         }
     }
 
+    /**
+     * @param string $scope
+     * @param array $cells
+     *
+     * @return array
+     */
     public function groupCellsByScope(string $scope, array $cells) {
         $groupedCellsArray = [];
 
@@ -406,6 +540,10 @@ class SudokuSolver
         return $groupedCellsArray;
     }
 
+    /**
+     * @param bool $andPossibilities
+     * @param bool $withStart
+     */
     public function showSolvedSoduku(bool $andPossibilities = false, $withStart = false): void {
         if ( $withStart ) {
             $this->showSudoku($andPossibilities, $this->isSolved());
